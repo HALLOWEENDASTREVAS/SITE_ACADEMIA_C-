@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro de Alunos</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide|Sofia|Trirong">
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/main.js"></script>
+</head>
+<body>
+    <div class="containerDuo">
+        <div class="BlockLeft" style="width: 25%;">
+            <h4 class="TitPage">Novo Aluno</h4>
+            <hr>
+            <form id="form-alunos">
+                <div class="form-group">
+                    <input class="form-control" placeholder="Nome do Aluno" type="text" id="nomeAluno" name="nomeAluno" required />
+                </div>
+
+                <div class="form-group">
+                    <select class="form-control" onchange="fAtuDados(this.value);" id="planoAluno" name="planoAluno" class="form-select" required>
+                        <option value="" selected>Selecione o Plano</option>
+                        <option value="Mensal">Mensal</option>
+                        <option value="Trimestral">Trimestral</option>
+                        <option value="Anual">Anual</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <input class="form-control" placeholder="Aulas do Plano" id="aulasPlano" name="aulasPlano" readonly type="text" size="6px" value=""/>
+                </div>
+
+                <div class="form-group">
+                    <button class="btn btn-primary" type="submit" style="float: right;">Salvar</button>
+                </div>
+            </form>
+        </div>
+
+        <div style="width: 75%;">
+            <div>
+                <span class="titulo">Lista de Alunos</span>
+                <button class="btn btn-secondary" type="button" style="float: right;" onclick="loadAlunos();">Pesquisar</button>
+            </div>
+            <hr>
+            <table id="tabela-alunos" class="table table-hover">
+                <thead  class="thead-dark">
+                    <tr>
+                        <th  scope="col" width="10%" style="text-align: center;">Código</th>
+                        <th  scope="col" width="50%" style="text-align: left;">Nome do Aluno</th>
+                        <th  scope="col" width="20%" style="text-align: center;">Plano</th>
+                        <th  scope="col" width="20%" style="text-align: center;">Aulas Plano</th>
+                        <th  scope="col" width="20%" style="text-align: center;">Inscritas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Os dados serao inseridos aqui dinamicamente -->
+                    <tr>
+                        <td colspan="4" style="text-align: center;">Nenhum registro encontrado no momento.
+                    </td>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
+
+<script>
+    // Rota da API
+    const vEndPoint = '/api/Alunos';
+
+    /*$(document).ready(function() {
+        // Carrega a lista de alunos ao iniciar a página
+        loadAlunos();
+    });*/
+
+    $('#form-alunos').submit(function(e) {
+        e.preventDefault();
+        const aluno = {
+            nomeAluno: $('#nomeAluno').val(),
+            aulasPlano: parseInt($('#aulasPlano').val()),
+            aulasFeitas: 0, // começa em 0
+            planoAluno: $('#planoAluno').val()
+        };
+        $.ajax({
+            url: vUrlApi + vEndPoint,
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(aluno),
+            success: function() {
+                loadAlunos();
+                $('#form-alunos')[0].reset();
+            },
+            error: function(xhr, status, error) {
+                console.log('Erro ao salvar aluno:', status, error, xhr);
+                alert('Erro ao salvar aluno. Verifique os dados e tente novamente.');
+            }
+        });
+    });
+
+    $(document).on('click', '.btn-delete-aluno', function() {
+        const id = $(this).data('id');
+        $.ajax({
+            url: vUrlApi + vEndPoint + "/" + id,
+            method: 'DELETE',
+            success: function() {
+                loadAlunos();
+            }
+        });
+    });
+
+    function fAtuDados(val) {
+        // Atualiza o número de aulas no plano com base no tipo de plano selecionado
+        let aulasPlano = 0;
+
+        switch (val) {
+            case 'Mensal':
+                aulasPlano = 12;
+                break;
+            case 'Trimestral':
+                aulasPlano = 20;
+                break;
+            case 'Anual':
+                aulasPlano = 30;
+                break;
+        }
+        $('#aulasPlano').val(aulasPlano);
+    }
+
+    function loadAlunos() {
+        $.ajax({
+            url: vUrlApi + "/api/Alunos/filter",
+            method: 'GET',
+            success: function (data) {
+                debugger;
+                let rows = '';
+                data.forEach(aluno => {
+                    rows += '<tr>'
+                        + `<td>${aluno.idAluno}</td>`
+                        + `<td>${aluno.nomeAluno}</td>`
+                        + `<td>${aluno.planoAluno}</td>`
+                        + `<td>${aluno.aulasPlano}</td>`
+                        + `<td>${aluno.aulasFeitas}</td>`
+                        + '<td>'
+                        + `<button class="btn-delete-aluno" data-id="${aluno.idAluno}">Excluir</button>`
+                        + '</td></tr>';
+                });
+                $('#tabela-alunos tbody').html(rows);
+            },
+            error: function(xhr, status, error) {
+                debugger;
+                console.log('Divergência ao carregar alunos:', status, error);
+                $('#tabela-alunos tbody').html('<td colspan="4" style="text-align: center;">Nenhum registro encontrado no momento.');
+                alert("Nenhum registro encontrado no momento!");
+            }
+        });
+    }
+</script>

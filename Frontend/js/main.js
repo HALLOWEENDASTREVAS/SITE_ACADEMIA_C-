@@ -1,0 +1,1 @@
+var vUrlApi   = 'http:localhost:5001'; // URL base da API

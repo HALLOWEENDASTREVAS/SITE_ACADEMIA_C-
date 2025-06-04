@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Inscrições</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide|Sofia|Trirong">
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/main.js"></script>
+</head>
+<body>
+    <div class="containerDuo">
+        <div class="BlockLeft" style="width: 25%;">
+            <h4 class="TitPage">Filtros Relatório</h4>
+            <hr>
+            <form id="form-alunos">
+                <div class="form-group">
+                    <input class="form-control" placeholder="Código Aluno" type="text" id="alunoId" name="alunoId" required />
+                </div>
+
+                <div class="form-group">
+                    <input class="form-control" placeholder="Mês Consulta" type="number" id="mes" value="" min="1" max="12" />
+                </div>
+
+                <div class="form-group">
+                    <input class="form-control" placeholder="Ano Consulta" type="number" id="ano" value="" min="2000" max="${new Date().getFullYear() + 10}" />
+                </div>
+
+                <div class="form-group">
+                    <button class="btn btn-primary" type="submit" style="float: right;">Salvar</button>
+                </div>
+            </form>
+        </div>
+        
+        <div id="resultado" style="width: 75%;">
+            <div>
+                <span class="titulo">Relatório de Alunos</span>
+                <button class="btn btn-secondary" type="button" style="float: right;" onclick="loadAlunos();">Pesquisar</button>
+            </div>
+            <hr>
+            <div>
+                <span>Total de Aulas Agendadas no Mês: <span id="totalAulas">0</span></span>
+            </div>
+            <table id="tabela-tipo-aula" class="table table-hover">
+                <thead  class="thead-dark">
+                    <tr>
+                        <th scope="col" width="60%" style="text-align: center;">Tipo de Aula</th>
+                        <th scope="col" width="40%" style="text-align: center;">Quantidade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dados inseridos dinamicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+    // Rota da API
+    const vEndPoint = '/api/Inscritos';
+
+    $('#mes').val((new Date().getMonth() + 1));
+    $('#ano').val((new Date().getFullYear()));
+
+    $(document).ready(function() {
+        $('#buscarRelatorio').click(function() {
+            var alunoId = $('#alunoId').val();
+            var vMes = $('#mes').val() ? $('#mes').val() : new Date().getMonth() + 1;
+            var vAno = $('#ano').val() ? $('#ano').val() : new Date().getFullYear();
+
+            vMes = vMes < 1 ? 1 : (vMes > 12 ? 12 : vMes);
+
+            if (!alunoId) {
+                alert('Informe o ID do aluno!');
+                return;
+            }
+
+            $.ajax({
+                url: vUrlApi + vEndPoint + '?alunoId=' + alunoId + '&mes=' + vMes + '&ano=' + vAno,
+                method: 'GET',
+                success: function(data) {
+                    $('#totalAulas').text(data.totalAulasNoMes);
+
+                    var tbody = $('#tiposAulaTable tbody');
+                    tbody.empty();
+
+                    $.each(data.tiposMaisFrequentes, function(index, item) {
+                        var row = `<tr>
+                            <td>${item.tipoAula}</td>
+                            <td>${item.quantidade}</td>
+                        </tr>`;
+                        tbody.append(row);
+                    });
+                },
+                error: function(err) {
+                    console.error(err);
+                    alert('Erro ao buscar relatório.');
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

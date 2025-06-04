@@ -1,0 +1,95 @@
+@font-face {
+    font-family: "Raleway Especial";
+    src: local(Raleway), url(../fonts/Raleway-Normal.ttf);
+}
+
+@font-face {
+    font-family: "Raleway Especial";
+    src: local(Raleway), url(../fonts/Raleway-Bold.ttf);
+    font-weight: 600;
+}
+
+@font-face {
+    font-family: "Raleway Especial";
+    src: local(Raleway), url(../fonts/Raleway-ExtraBold.ttf);
+    font-weight: 800;
+}
+
+html, body {
+    font-family: "Raleway Especial", sans-serif;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+}
+
+div {
+    font-family: "Raleway Especial", sans-serif;
+    font-size: 0.9rem;
+}
+
+.CabMenu {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(92 21 87);
+    /* padding: 0 10px; */
+    max-height: 50px;
+}
+
+
+.MenuButton, .MenuIconCab {
+    margin: 0 0 1px 0;
+    padding: 5px 20px;
+    text-decoration: none;
+    font-size: 14px;
+    color: white;
+    cursor: pointer;
+}
+
+.MenuButton:hover {
+    background-color: #343a40;
+}
+
+.IconLogo {
+    height: 40px;
+    width: auto;
+    border-radius: 100%;
+    margin: 0 20px;
+}
+
+.iframe_body {
+    height: calc(100vh - 52px);
+    width: 99.98%;
+    border: none;
+}
+
+.container, containerDuo {
+    padding: 5%;
+}
+    
+.containerDuo {
+    display: flex;
+    padding-top: 50px;
+    justify-content: flex-start;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+}
+
+.BlockLeft {
+    margin-left: 1%;
+    margin-right: 5%;
+    border-right: solid 1px silver;
+}
+
+.containerDuo div {
+    height: 100%;
+    padding: 0 5px;
+}
+
+.titulo {
+    font-size: 25px;
+}

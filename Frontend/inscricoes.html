@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Inscrições</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide|Sofia|Trirong">
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/main.js"></script>
+</head>
+<body>
+    <div class="containerDuo">
+        <div class="BlockLeft" style="width: 25%;">
+            <h4>Inscrições</h4>
+            <hr>
+            <form id="form-inscricoes">
+                <div class="form-group">
+                    <input class="form-control" placeholder="Código do Aluno" type="number" id="idAluno" name="idAluno" required />
+                </div>
+
+                <div class="form-group">
+                    <input class="form-control" placeholder="Código da Aula" type="number" id="idAula" name="idAula"  required />
+                </div>
+
+                <div class="form-group">
+                    <button class="btn btn-primary" type="submit" style="float: right;">Salvar</button>
+                </div>
+            </form>
+        </div>
+
+        <div style="width: 75%;">
+            <div>
+                <span class="titulo">Lista de Inscritos</span>
+                <button class="btn btn-secondary" type="button" style="float: right;" onclick="loadInscricoes();">Pesquisar</button>
+            </div>
+            <hr>
+            <table id="tabela-inscritos" class="table table-hover">
+                <thead  class="thead-dark">
+                    <tr>
+                        <th scope="col" width="15%" style="text-align: center;">ID Aluno</th>
+                        <th scope="col" width="30%" style="text-align: center;">Nome Aluno</th>
+                        <th scope="col" width="15%" style="text-align: center;">ID Aula</th>
+                        <th scope="col" width="20%" style="text-align: center;">Data Aula</th>
+                        <th scope="col" width="20%" style="text-align: center;">Tipo Aula</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Os dados serao inseridos aqui dinamicamente -->
+                    <tr>
+                        <td colspan="5" style="text-align: center;">Nenhum registro encontrado no momento.
+                    </td>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Rota da API
+        const vEndPoint = '/api/Inscritos';
+
+        /*
+        $(document).ready(function() {
+            // Carrega a lista ao iniciar a tela
+            loadInscricoes();
+        });
+        */
+
+        function loadInscricoes() {
+            vfiltros = '';
+
+            if ($('#idAluno').val() !== '') vfiltros += '?idAluno=' + $('#idAluno').val();
+
+            if ($('#idAula').val() !== '') {
+                if (vfiltros === '') vfiltros += '?idAula=' + $('#idAula').val();
+                else vfiltros += '&idAula=' + $('#idAula').val();
+            }
+
+            $.ajax({
+                url: vUrlApi + vEndPoint + vfiltros,
+                method: 'GET',
+                success: function(data) {
+                    let rows = '';
+                    data.forEach(item => {
+                        rows += '<tr>'
+                            + `<td>${item.idAluno}</td>`
+                            + `<td>${item.aluno.nomeAluno}</td>`
+                            + `<td>${item.idAula}</td>`
+                            + `<td>${new Date(item.aula.dataAula).toLocaleString()}</td>`
+                            + `<td>${item.aula.tipoAula }</td>`
+                            + '<td>'
+                            + `<button class="btn-delete-inscricao" data-id-aluno="${item.idAluno}" data-id-aula="${item.idAula}">Excluir</button>`
+                            + '</td></tr>';
+                    });
+                    $('#tabela-inscricoes tbody').html(rows);
+                }
+            });
+        }
+
+        $('#form-inscricoes').submit(function(e) {
+            e.preventDefault();
+            const inscricao = {
+                idAluno: parseInt($('#idAluno').val()),
+                idAula: parseInt($('#idAula').val())
+            };
+            $.ajax({
+                url: vUrlApi + vEndPoint,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(inscricao),
+                success: function() {
+                    alert('Inscrição realizada com sucesso.');
+                    loadInscricoes();
+                    loadAulas();    // atualiza Confirmados na tabela de aulas
+                    loadAlunos();   // atualiza AulasFeitas na tabela de alunos
+                    $('#form-inscricoes')[0].reset();
+                },
+                error: function(xhr) {
+                    // Exibe mensagem de erro retornada pela API (400)
+                    const msg = xhr.responseText || 'Erro ao se inscrever.';
+                    alert('Falha na inscrição: ' + msg);
+                }
+            });
+        });
+
+        $(document).on('click', '.btn-delete-inscricao', function() {
+            const idAluno = $(this).data('id-aluno');
+            const idAula = $(this).data('id-aula');
+            $.ajax({
+                url: vUrlApi + vEndPoint + '/' + idAluno + '/' + idAula,
+                method: 'DELETE',
+                success: function() {
+                    alert('Inscrição cancelada.');
+                    loadInscricoes();
+                    loadAulas();
+                    loadAlunos();
+                }
+            });
+        });
+    </script>
